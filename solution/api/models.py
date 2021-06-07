@@ -88,3 +88,14 @@ class Car(models.Model):
         else:
             self.gas = gas_quantity
         self.save()
+
+    def tyres_increment_degradation(self):
+        for t in self.tyre.objects.all():
+            t.increment_degradation()
+
+    def check_tyres(self):
+        unuseful_tyres = 0
+        for t in self.tyre.objects.filter(degradation_gt=TYRE_NEED_MAINTENANCE).all():
+            t.delete()
+            unuseful_tyres += 1
+        return unuseful_tyres
