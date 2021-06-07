@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,23 +21,38 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%65&g6m2mzb6s5-+zyr!)n)(j##j&cdg&k#!p@qp(_ljc_+#&i'
+SECRET_KEY = config(
+    'SECRET_KEY', 
+    default='django-insecure-%65&g6m2mzb6s5-+zyr!)n)(j##j&cdg&k#!p@qp(_ljc_+#&i'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
 
 # Application definition
+ENGINE = 'django.db.backends.postgresql'
+POSTGRES_DB = config('POSTGRES_DB', default='db')
+POSTGRES_USER = config('POSTGRES_USER', default='user')
+POSTGRES_PASSWORD = config('POSTGRES_PASSWORD', default='Zjem6ehnBcR*r3')
+
+DB_SERVICE = config('DB_SERVICE', default='db_postgres')
+DB_PORT = config('DB_PORT', default='5432')
+
 
 INSTALLED_APPS = [
+    'api',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -75,8 +91,13 @@ WSGI_APPLICATION = 'carmanager.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': ENGINE,
+        'DISABLE_SERVER_SIDE_CURSORS': True,
+        'NAME': POSTGRES_DB,
+        'USER': POSTGRES_USER,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'HOST': DB_SERVICE,
+        'PORT': DB_PORT,
     }
 }
 
@@ -98,6 +119,29 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# DRF settings
+DEFAULT_RENDERER_CLASSES = (
+    'rest_framework.renderers.JSONRenderer',
+)
+
+if DEBUG:
+    DEFAULT_RENDERER_CLASSES += (
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
+
+DEFAULT_PAGINATION_CLASS = 'rest_framework.pagination.PageNumberPagination'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': DEFAULT_PAGINATION_CLASS,
+    'PAGE_SIZE': 10,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
+}
 
 
 # Internationalization
@@ -123,3 +167,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+TYRE_NEED_MAINTENANCE = config('TYRE_NEED_MAINTENANCE', default=94)
+CAR_GAS_CAPACITY = config('CAR_GAS_CAPACITY', default=50)
