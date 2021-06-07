@@ -69,10 +69,7 @@ Thumbs.db
 
 # environment
 .var_env
+.env
 
 # sqlite
 *.sqlite3
-
-# Django generated files
-wenify/static/*
-wenify/wenify/static/*
