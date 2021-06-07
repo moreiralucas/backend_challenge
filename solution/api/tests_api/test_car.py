@@ -19,9 +19,9 @@ class CarTest(BaseTest):
     def test_car_cant_swape_tyre_before_94_degradation(self):
         car = self.car
         tyre = car.tyre.first()
-        tyre_id = tyre.id
         response_car = car.maintenance(tyre)
-        self.assertEqual(tyre_id, response_car.tyre.id)
+        tyre_dict = {'id': tyre.pk, 'degradation': tyre.degradation}
+        self.assertIn(tyre_dict, response_car['tyres'])
 
     # def test_car_should_not_refuel_before_it_has_less_than_5_on_tank(self):
     #     car = self.car
@@ -32,7 +32,7 @@ class CarTest(BaseTest):
         self.car.tyres_increment_degradation()
 
         for t in self.car.tyre.all():
-            self.assertEqual(t.degradation, 98)
+            self.assertEqual(t.degradation, 2)
 
     def test_trip_with_successful(self):
         self.car.trip(10000)
