@@ -7,7 +7,7 @@ from api.models import Car, Tyre
 API_BASE_URL = '/api/v1/'
 URL_VIEW_CAR = API_BASE_URL + 'car/'
 URL_VIEW_TYRE = API_BASE_URL + 'tyre/'
-
+URL_VIEW_CAR_REFUEL = URL_VIEW_CAR + '{}/refuel'
 
 class APITest(BaseTest):
     def test_create_car(self):
@@ -25,8 +25,14 @@ class APITest(BaseTest):
         status = response['status']
         self.assertTrue(isinstance(status, dict))
         self.assertTrue('gas' in status)
+        self.assertEqual('50 Litre(s)', status['gas'])
+
         self.assertTrue('gas_capacity' in status)
+        self.assertEqual(status['gas_capacity'], '50 Litres')
+
         self.assertTrue('gas_percent' in status)
+        self.assertEqual(status['gas_percent'], '100.0%')
+
         self.assertTrue('tyres' in status)
         tyres = status['tyres']
         self.assertEqual(len(tyres), 4)

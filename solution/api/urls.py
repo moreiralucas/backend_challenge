@@ -9,5 +9,5 @@ api_router.register(r'car', CarViewSet)
 api_router.register(r'tyre', TyreViewSet)
 
 urlpatterns = [
-    path('', include(api_router.urls)),
+    path('', include(api_router.urls), name='api-router'),
 ]
