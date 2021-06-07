@@ -17,6 +17,9 @@ class Tyre(models.Model):
         related_name='tyre'
     )
 
+    def __str__(self):
+        return '{self.degradation} - {self.car}'
+
     @classmethod
     def createTyre(cls, car):
         """Returns a new Tyre instance
@@ -53,6 +56,9 @@ class Car(models.Model):
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(1000)],
     )
+
+    def __str__(self):
+        return f'{self.pk} - {self.gas}'
 
     @property
     def gas(self):
