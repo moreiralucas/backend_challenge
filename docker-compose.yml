@@ -1,0 +1,29 @@
+version: '3.3'
+
+services:
+  web:
+    build: .
+    container_name: car_manager
+    command:  >
+      sh -c "cd solution && python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:latest
+    container_name: db_postgres
+    restart: always
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
