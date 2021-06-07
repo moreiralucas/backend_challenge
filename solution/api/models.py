@@ -63,3 +63,7 @@ class Car(models.Model):
         for _ in range(4):
             Tyre.objects.create(car=car)
         return car
+
+    def gas_decrement(self, value=1):
+        self.gas = int(self.gas) - value
+        self.save()
