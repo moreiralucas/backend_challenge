@@ -19,15 +19,27 @@ class Tyre(models.Model):
 
     @classmethod
     def createTyre(cls, car):
+        """Returns a new Tyre instance
+
+        Returns:
+            Tyre: Tyre instance
+        """
         tyres = cls.objects.filter(car=car).count()
         assert tyres <= 4, 'A car can\'t have more than 4 tyres!'
         return cls.objects.create(car=car)
 
     @property
     def status(self):
+        """Returns car tire status.
+
+        Returns:
+            dict: Status of Tyre
+        """
         return {'id': self.pk, 'degradation': self.degradation}
 
     def increment_degradation(self, value=1):
+        """Increment of the degradation of tyre.
+        """
         self.degradation += value
         self.save()
 
@@ -44,18 +56,38 @@ class Car(models.Model):
 
     @property
     def gas(self):
+        """Return the car's current amount of gas in liters
+
+        Returns:
+            int: The car's current amount of gas in liters
+        """
         return int(self._gas)
 
     @property
     def gas_capacity(self):
+        """Return the car's total gas capacity in liters
+
+        Returns:
+            int: The car's total gas capacity in liters
+        """
         return int(self._gas_capacity)
 
     @property
     def gas_percent(self):
+        """Return the car's total gas capacity in percentage.
+
+        Returns:
+            int: The car's total gas capacity in percentage.
+        """
         return 0 if self.gas == 0 else self.gas / self.gas_capacity * 100
 
     @property
     def status(self):
+        """Returns the current status of the car.
+
+        Returns:
+            dict: The current status of the car.
+        """
         return {
             'gas': f'{self.gas} Litre(s)',
             'gas_capacity': f'{self.gas_capacity} Litres',
