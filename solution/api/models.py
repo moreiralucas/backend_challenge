@@ -99,3 +99,22 @@ class Car(models.Model):
             t.delete()
             unuseful_tyres += 1
         return unuseful_tyres
+
+    def trip(self, distance):
+        assert distance >= 0, 'The distance can\'t have a negative value!'
+        travelled_distance = 0
+        while travelled_distance < distance:
+            travelled_distance += 1
+            if travelled_distance % 8 == 0:
+                self.gas_decrement()
+
+            if travelled_distance % 3 == 0:
+                self.tyres_increment_degradation()
+
+            if self.gas_percent < 5:
+                self.refuel(self.gas_capacity * 0.95)
+
+            for t in self.tyres.all():
+                self.maintenance(t)
+
+        return self.status
