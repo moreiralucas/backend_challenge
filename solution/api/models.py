@@ -23,6 +23,14 @@ class Tyre(models.Model):
         assert tyres <= 4, 'A car can\'t have more than 4 tyres!'
         return cls.objects.create(car=car)
 
+    @property
+    def status(self):
+        return {'id': self.id, 'degradation': self.degradation}
+
+    def increment_degradation(self, value=1):
+        self.degradation += value
+        self.save()
+
 
 class Car(models.Model):
     gas_capacity = models.PositiveSmallIntegerField(
