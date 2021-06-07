@@ -7,7 +7,7 @@ from api.models import Car, Tyre
 API_BASE_URL = '/api/v1/'
 URL_VIEW_CAR = API_BASE_URL + 'car/'
 URL_VIEW_TYRE = API_BASE_URL + 'tyre/'
-URL_VIEW_CAR_REFUEL = URL_VIEW_CAR + '{}/refuel/'
+URL_VIEW_CAR_REFUEL = URL_VIEW_CAR + '{}/refuel/{}/'
 URL_VIEW_CAR_MAINTENANCE = URL_VIEW_CAR + '{}/maintenance/{}/'
 URL_VIEW_CAR_TRIP = URL_VIEW_CAR + '{}/trip/{}/'
 
@@ -45,8 +45,7 @@ class APITest(BaseTest):
         response = json.loads(response.content.decode('utf8'))
 
         car_id = response['id']
-        data = ({"gas_quantity": "20"})
-        response = self.client.post(URL_VIEW_CAR_REFUEL.format(car_id), data)
+        response = self.client.post(URL_VIEW_CAR_REFUEL.format(car_id, 20))
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content.decode('utf8'))
 
@@ -59,7 +58,7 @@ class APITest(BaseTest):
         tyres = response['status']['tyres']
         for data in tyres:
             tyre_id = data['id']
-            response = self.client.post(URL_VIEW_CAR_MAINTENANCE.format(car_id, tyre_id), data)
+            response = self.client.post(URL_VIEW_CAR_MAINTENANCE.format(car_id, tyre_id))
             self.assertEqual(response.status_code, 200)
             status = json.loads(response.content.decode('utf8'))
 
