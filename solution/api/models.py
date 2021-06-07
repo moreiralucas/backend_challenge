@@ -67,3 +67,24 @@ class Car(models.Model):
     def gas_decrement(self, value=1):
         self.gas = int(self.gas) - value
         self.save()
+
+    def maintenance(self, part_to_replace):
+        if isinstance(part_to_replace, Tyre):
+            tyre = self.tyre.filter(
+                degradation_gt=95, pk=part_to_replace.pk
+            ).first()
+            if tyre is not None:
+                tyre.delete()
+                Tyre.createTyre(self)
+            return self
+
+    def refuel(self, gas_quantity):
+        assert self.gas_percent >= 5, f'The car should NOT be refueled before it has less than 5% gas on tank!'
+        if self.gas + gas_quantity > self.gas_capacity:
+            only_used = self.gas_capacity - self.gas
+            self.gas = self.gas_capacity
+            logging.info(
+                f'The amount of gas exceeded the limit supported by the car, only {only_used} liters were used.')
+        else:
+            self.gas = gas_quantity
+        self.save()
