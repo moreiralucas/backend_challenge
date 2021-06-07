@@ -25,7 +25,7 @@ class Tyre(models.Model):
 
     @property
     def status(self):
-        return {'id': self.id, 'degradation': self.degradation}
+        return {'id': self.pk, 'degradation': self.degradation}
 
     def increment_degradation(self, value=1):
         self.degradation += value
@@ -33,14 +33,22 @@ class Tyre(models.Model):
 
 
 class Car(models.Model):
-    gas_capacity = models.PositiveSmallIntegerField(
+    _gas_capacity = models.PositiveSmallIntegerField(
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(1000)],
     )
-    gas = models.PositiveSmallIntegerField(
+    _gas = models.PositiveSmallIntegerField(
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(1000)],
     )
+
+    @property
+    def gas(self):
+        return int(self._gas)
+
+    @property
+    def gas_capacity(self):
+        return int(self._gas_capacity)
 
     @property
     def gas_percent(self):
@@ -57,54 +65,79 @@ class Car(models.Model):
 
     @classmethod
     def createCar(cls):
+        """Returns a new car instance
+
+        Returns:
+            Car: Car instance
+        """
         car = cls.objects.create(
-            gas_capacity=CAR_GAS_CAPACITY,
-            gas=CAR_GAS_CAPACITY)
+            _gas_capacity=CAR_GAS_CAPACITY,
+            _gas=CAR_GAS_CAPACITY)
         for _ in range(4):
             Tyre.objects.create(car=car)
         return car
 
     def gas_decrement(self, value=1):
-        self.gas = int(self.gas) - value
+        """Decreases car gas.
+
+        Args:
+            value (int, optional): The decrement step value. Defaults to 1.
+        """
+        self._gas = self.gas - value
         self.save()
 
     def maintenance(self, part_to_replace):
+        """Carries out maintenance on the car and returns its instance.
+
+        Args:
+            part_to_replace (Model): Element of the car that will be serviced.
+
+        Returns:
+            Car: Car instance
+        """
         if isinstance(part_to_replace, Tyre):
             tyre = self.tyre.filter(
-                degradation_gt=95, pk=part_to_replace.pk
+                degradation__gt=TYRE_NEED_MAINTENANCE, pk=part_to_replace.pk
             ).first()
             if tyre is not None:
                 tyre.delete()
                 Tyre.createTyre(self)
-            return self
+        return self.status
 
     def refuel(self, gas_quantity):
-        assert self.gas_percent >= 5, f'The car should NOT be refueled before it has less than 5% gas on tank!'
+        """Fuel up the car if possible
+
+        Args:
+            gas_quantity (int): Number of liters of gasoline that will fuel the car
+        """
+        assert self.gas_percent < 5, f'The car should NOT be refueled before it has less than 5% gas on tank!\nActually you have {self.gas_percent}% of gas'
         if self.gas + gas_quantity > self.gas_capacity:
             only_used = self.gas_capacity - self.gas
-            self.gas = self.gas_capacity
+            self._gas = self.gas_capacity
             logging.info(
                 f'The amount of gas exceeded the limit supported by the car, only {only_used} liters were used.')
         else:
-            self.gas = gas_quantity
+            self._gas = gas_quantity
         self.save()
 
     def tyres_increment_degradation(self):
-        for t in self.tyre.objects.all():
+        """Increment of the degradation of the 4 tires of the car.
+        """
+        for t in self.tyre.all():
             t.increment_degradation()
 
-    def check_tyres(self):
-        unuseful_tyres = 0
-        for t in self.tyre.objects.filter(degradation_gt=TYRE_NEED_MAINTENANCE).all():
-            t.delete()
-            unuseful_tyres += 1
-        return unuseful_tyres
-
     def trip(self, distance):
+        """Performs the trip and returns the status of the car after the trip.
+
+        Args:
+            distance (int): Distance to be covered by the car on the trip in km
+
+        Returns:
+            dict: Car status after trip.
+        """
         assert distance >= 0, 'The distance can\'t have a negative value!'
         travelled_distance = 0
         while travelled_distance < distance:
-            travelled_distance += 1
             if travelled_distance % 8 == 0:
                 self.gas_decrement()
 
@@ -114,7 +147,8 @@ class Car(models.Model):
             if self.gas_percent < 5:
                 self.refuel(self.gas_capacity * 0.95)
 
-            for t in self.tyres.all():
+            for t in self.tyre.all():
                 self.maintenance(t)
+            travelled_distance += 1
 
         return self.status
