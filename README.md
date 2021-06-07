@@ -1,3 +1,7 @@
+# Solution of challenge
+
+See the **Instructions.md** file before to run this project.
+
 # Backend Developer Challenge
 This is a simple challenge to test your skills on building APIs and your logic.
 It has to be done using Python and Django/Django Rest Framework
