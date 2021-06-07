@@ -17,6 +17,12 @@ class Tyre(models.Model):
         related_name='tyre'
     )
 
+    @classmethod
+    def createTyre(cls, car):
+        tyres = cls.objects.filter(car=car).count()
+        assert tyres <= 4, 'A car can\'t have more than 4 tyres!'
+        return cls.objects.create(car=car)
+
 
 class Car(models.Model):
     gas_capacity = models.PositiveSmallIntegerField(
@@ -40,3 +46,12 @@ class Car(models.Model):
             'gas_percent': f'{self.gas_percent}%',
             'tyres': [t.status for t in self.tyre.all()]
         }
+
+    @classmethod
+    def createCar(cls):
+        car = cls.objects.create(
+            gas_capacity=CAR_GAS_CAPACITY,
+            gas=CAR_GAS_CAPACITY)
+        for _ in range(4):
+            Tyre.objects.create(car=car)
+        return car
