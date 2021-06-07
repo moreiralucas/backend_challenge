@@ -9,6 +9,7 @@ URL_VIEW_CAR = API_BASE_URL + 'car/'
 URL_VIEW_TYRE = API_BASE_URL + 'tyre/'
 URL_VIEW_CAR_REFUEL = URL_VIEW_CAR + '{}/refuel/'
 URL_VIEW_CAR_MAINTENANCE = URL_VIEW_CAR + '{}/maintenance/{}/'
+URL_VIEW_CAR_TRIP = URL_VIEW_CAR + '{}/trip/{}/'
 
 class APITest(BaseTest):
     def test_create_car(self):
@@ -71,3 +72,13 @@ class APITest(BaseTest):
 
             self.assertTrue('gas_percent' in status)
             self.assertEqual(status['gas_percent'], '100.0%')
+
+    def test_car_trip(self):
+        response = self.client.post(URL_VIEW_CAR)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content.decode('utf8'))
+
+        car_id = response['id']
+        response = self.client.post(URL_VIEW_CAR_TRIP.format(car_id, 10000))
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content.decode('utf8'))

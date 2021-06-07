@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets
 
+
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
     serializer_class = CarSerializer
@@ -37,6 +38,19 @@ class CarViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(car)
         return Response(serializer.data)
+
+    @action(methods=['post'], url_path='(?P<pk>[^/.]+)/trip/(?P<distance>[^/.]+)', detail=False)
+    def trip(self, request, pk=None, distance=None, *args, **kwargs):
+        car = self.get_object()
+        try:
+            status = car.trip(int(distance))
+            return Response(status)
+        except Exception as e:
+            logging.info(e)
+
+        serializer = self.get_serializer(car)
+        return Response(serializer.data)
+
 
 class TyreViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tyre.objects.all()
